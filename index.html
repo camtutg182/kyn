@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>佣金机制</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: rgb(16, 67, 159);
+            --secondary-color: rgb(135, 76, 204);
+            --accent-color: rgb(198, 91, 207);
+            --highlight-color: rgb(242, 123, 189);
+            --background-color: rgb(16, 67, 159);
+            --card-shadow: 0 8px 30px rgba(16, 67, 159, 0.3);
+            --transition: all 0.3s ease;
+            --text-color: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --gradient-start: rgb(16, 67, 159);
+            --gradient-mid: rgb(135, 76, 204);
+            --gradient-end: rgb(198, 91, 207);
+            --border-color: rgba(255, 255, 255, 0.2);
+            --gradient-text: linear-gradient(45deg, rgb(16, 67, 159), rgb(135, 76, 204), rgb(198, 91, 207));
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(16, 67, 159, 0.6) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(135, 76, 204, 0.6) 0%, transparent 50%),
+                linear-gradient(135deg, rgba(16, 67, 159, 0.6), rgba(135, 76, 204, 0.6), rgba(198, 91, 207, 0.6));
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 60px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.1));
+            border-radius: 24px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 30px;
+            position: relative;
+        }
+
+        .header-top {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            margin-bottom: 40px;
+            padding-left: 0;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            margin: 0;
+            padding: 0;
+            display: block;
+        }
+
+        .product-name {
+            font-size: 5.5em;
+            font-weight: 800;
+            color: #ffffff;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.2);
+            position: relative;
+            padding: 0;
+            text-align: left;
+            display: inline-block;
+            align-items: center;
+            margin-left: 0;
+            line-height: 1;
+        }
+
+        .vpn-text {
+            font-size: 0.6em;
+            color: var(--highlight-color);
+            display: inline;
+            margin: 0;
+            text-shadow: 0 0 5px rgba(242, 123, 189, 0.3);
+            font-weight: 900;
+            letter-spacing: 1px;
+            font-style: italic;
+            transform: rotate(-15deg);
+            position: absolute;
+            top: -30px;
+            right: -120px;
+            background: linear-gradient(45deg, 
+                rgb(242, 123, 189),
+                rgb(198, 91, 207)
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header h1 {
+            font-size: 5.5em;
+            margin: 0;
+            font-weight: 800;
+            color: #ffffff;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.2);
+            padding: 30px 0;
+            position: relative;
+        }
+
+        .header h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .rules-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .rules-section {
+            background: linear-gradient(135deg, 
+                rgba(16, 67, 159, 0.2),
+                rgba(135, 76, 204, 0.2),
+                rgba(198, 91, 207, 0.2)
+            );
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .rules-section h2 {
+            color: #ffffff;
+            font-size: 2em;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+            opacity: 0.9;
+        }
+
+        .rules-content {
+            padding: 15px;
+        }
+
+        .rules-section p {
+            color: #ffffff;
+            font-size: 1.6em;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            font-weight: 500;
+            text-shadow: none;
+            opacity: 0.8;
+        }
+
+        .sub-text {
+            color: var(--text-color);
+            opacity: 0.6;
+            font-size: 1.2em;
+        }
+
+        .example-box {
+            background: linear-gradient(135deg, 
+                rgba(242, 123, 189, 0.1),
+                rgba(198, 91, 207, 0.1)
+            );
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            opacity: 0.8;
+        }
+
+        .highlight-text {
+            color: var(--highlight-color);
+            font-weight: 600;
+            text-shadow: 0 0 5px rgba(242, 123, 189, 0.3);
+            font-size: 1.4em;
+            opacity: 0.8;
+        }
+
+        .rules-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .rules-section li {
+            padding: 20px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, 
+                rgba(16, 67, 159, 0.2),
+                rgba(135, 76, 204, 0.2),
+                rgba(198, 91, 207, 0.2)
+            );
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 1.6em;
+            position: relative;
+            padding-left: 30px;
+            font-weight: 500;
+            text-shadow: none;
+            opacity: 0.8;
+        }
+
+        .rules-section li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                rgb(242, 123, 189),
+                rgb(198, 91, 207),
+                rgb(135, 76, 204)
+            );
+            border-radius: 2px;
+        }
+
+        .commission-section,
+        .level-card,
+        .note {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rules-section::before,
+        .commission-section::before,
+        .level-card::before,
+        .note::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, 
+                rgb(16, 67, 159),
+                rgb(135, 76, 204),
+                rgb(198, 91, 207),
+                rgb(242, 123, 189)
+            );
+        }
+
+        .commission-levels {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 50px;
+            margin-top: 40px;
+        }
+
+        .level-card {
+            padding: 40px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, 
+                rgba(16, 67, 159, 0.25),
+                rgba(135, 76, 204, 0.25),
+                rgba(198, 91, 207, 0.25)
+            );
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .level-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, 
+                rgba(16, 67, 159, 0.3),
+                rgba(135, 76, 204, 0.3),
+                rgba(198, 91, 207, 0.3)
+            );
+        }
+
+        .level-card h3 {
+            color: #ffffff;
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            font-weight: 800;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+
+        .level-card p:not(.highlight) {
+            color: #ffffff;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            font-weight: 500;
+            text-shadow: none;
+            opacity: 0.7;
+        }
+
+        .commission-info {
+            margin-top: 20px;
+            padding: 30px;
+            background: linear-gradient(135deg, 
+                rgba(16, 67, 159, 0.3),
+                rgba(135, 76, 204, 0.3),
+                rgba(198, 91, 207, 0.3)
+            );
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .highlight {
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 5em;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+            margin: 20px 0;
+            display: block;
+            padding: 20px;
+            position: relative;
+            letter-spacing: 2px;
+            background: none;
+            -webkit-background-clip: none;
+            -webkit-text-fill-color: #ffffff;
+            border-radius: 15px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .commission-info p:not(.highlight) {
+            display: block;
+            color: #ffffff;
+            font-size: 1.6em;
+            margin: 10px 0;
+            font-weight: 700;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+            text-align: center;
+        }
+
+        .additional-info {
+            color: var(--highlight-color);
+            font-size: 1.8em;
+            margin-top: 20px;
+            text-shadow: 0 0 10px rgba(242, 123, 189, 0.5);
+        }
+
+        .example-info {
+            color: var(--text-secondary);
+            font-size: 1.4em;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .commission-section h2 {
+            color: #ffffff;
+            font-size: 4em;
+            margin-bottom: 40px;
+            font-weight: 900;
+            text-align: center;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+            padding: 20px 0;
+            position: relative;
+            letter-spacing: 2px;
+        }
+
+        .commission-section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: none;
+        }
+
+        .note {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .note h3 {
+            color: #ffffff;
+            font-size: 2.8em;
+            margin-bottom: 30px;
+            font-weight: 600;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+
+        .note p {
+            color: #ffffff;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            line-height: 1.4;
+            font-weight: 500;
+            text-shadow: none;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .rules-container {
+                grid-template-columns: 1fr;
+            }
+
+            .commission-levels {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <img src="images/logo.png" alt="Logo" class="logo">
+                <div class="product-name">
+                    Karlynx<span class="vpn-text">VPN</span>
+                </div>
+            </div>
+            <h1>套餐反佣机制</h1>
+        </div>
+
+        <div class="rules-container">
+            <div class="rules-section">
+                <h2>套餐换算规则</h2>
+                <div class="rules-content">
+                    <p>1套季度套餐 = 3套月套餐</p>
+                    <p class="sub-text">（按换算后的月套餐数量计算销量）</p>
+                    <div class="example-box">
+                        <p>例如：售出2套季度套餐 = 6套月套餐</p>
+                        <p class="highlight-text">直接触发「机制一」（5套门槛）</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rules-section">
+                <h2>结算周期</h2>
+                <div class="rules-content">
+                    <ul>
+                        <li>每月1日清零销量，每月独立计算阶梯返佣</li>
+                        <li>禁止跨月累计（如30日售出29套，不可延至下月凑30套）</li>
+                        <li>每月最后一日24:00截止统计，次月3日前发放返佣</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="commission-section">
+            <h2>返佣机制</h2>
+            <div class="commission-levels">
+                <div class="level-card">
+                    <h3>机制一：基础（5套）</h3>
+                    <p>门槛：当月累计售出 ≥5套月套餐（或≥2套季度套餐）</p>
+                    <div class="commission-info">
+                        <p class="highlight">总返佣 1000U</p>
+                    </div>
+                </div>
+
+                <div class="level-card">
+                    <h3>机制二：中级（10套）</h3>
+                    <p>门槛：当月累计售出 ≥10套月套餐（或≥4套季度套餐）</p>
+                    <div class="commission-info">
+                        <p class="highlight">总返佣 2100U</p>
+                    </div>
+                </div>
+
+                <div class="level-card">
+                    <h3>机制三：高级（20套）</h3>
+                    <p>门槛：当月累计售出 ≥20套月套餐（或≥7套季度套餐）</p>
+                    <div class="commission-info">
+                        <p class="highlight">总返佣 4400U</p>
+                    </div>
+                </div>
+
+                <div class="level-card">
+                    <h3>机制四：顶级（30套）</h3>
+                    <p>门槛：当月累计售出 ≥30套月套餐（或≥10套季度套餐）</p>
+                    <div class="commission-info">
+                        <p class="highlight">总返佣 6900U起</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="note">
+            <h3>重要说明</h3>
+            <p>仅按当月最高达成机制结算（如售出25套，按「机制三」结算4400U，而非叠加低阶梯）</p>
+            <p>超出30套部分按230U累加）</p>
+            <p>例如：售出35套 → 总返佣=35×230U=8050U</p>
+        </div>
+    </div>
+</body>
+</html>
