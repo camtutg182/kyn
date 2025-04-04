@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>佣金机制</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #e0e0e0;
+            --secondary-color: #3498db;
+            --accent-color: #2980b9;
+            --background-color: #1a1f2c;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            --transition: all 0.3s ease;
+            --text-color: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --card-bg: #2a2f3c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            background-image: 
+                linear-gradient(135deg, rgba(52, 152, 219, 0.1) 0%, transparent 50%),
+                linear-gradient(45deg, rgba(44, 62, 80, 0.1) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 40px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle at center, rgba(52, 152, 219, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(50%, -50%);
+        }
+
+        .container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle at center, rgba(44, 62, 80, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(-50%, 50%);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .logo-container {
+            width: 160px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: var(--card-bg);
+            border-radius: 4px;
+            padding: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .header .product-name {
+            color: var(--primary-color);
+            font-size: 2.4em;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin: 0;
+            position: relative;
+        }
+
+        .header .product-name::after {
+            content: 'VPN';
+            position: absolute;
+            top: -10px;
+            right: -40px;
+            font-size: 0.5em;
+            color: var(--secondary-color);
+            transform: rotate(-15deg);
+            font-weight: 500;
+        }
+
+        .header h1 {
+            color: var(--text-color);
+            font-size: 2.6em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            position: relative;
+        }
+
+        .rules-section {
+            margin-bottom: 40px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 6px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rules-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+            opacity: 0.8;
+        }
+
+        .rules-section h2 {
+            color: var(--primary-color);
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--secondary-color);
+            display: inline-block;
+        }
+
+        .rules-section p {
+            color: var(--text-secondary);
+            margin: 15px 0;
+            line-height: 1.8;
+            font-size: 1.2em;
+        }
+
+        .rules-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .rules-section li {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            line-height: 1.8;
+        }
+
+        .rules-section li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .commission-levels {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .level-card {
+            background: var(--card-bg);
+            border-radius: 6px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+            min-height: 240px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            background: linear-gradient(145deg, #2a2f3c, #1f2431);
+        }
+
+        .level-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
+            opacity: 0.8;
+        }
+
+        .level-card h3 {
+            color: var(--secondary-color);
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .level-card h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: var(--secondary-color);
+        }
+
+        .level-card p {
+            color: var(--text-secondary);
+            margin: 0;
+            line-height: 1.8;
+            font-size: 1.2em;
+        }
+
+        .commission-info {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .commission-info p {
+            margin: 0;
+            line-height: 1.6;
+            color: var(--text-color);
+        }
+
+        .highlight {
+            color: var(--secondary-color);
+            font-weight: 700;
+            font-size: 1.3em;
+            background: rgba(52, 152, 219, 0.15);
+            padding: 12px 25px;
+            border-radius: 4px;
+            display: inline-block;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+            margin: 15px 0;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(145deg, rgba(52, 152, 219, 0.2), rgba(52, 152, 219, 0.1));
+        }
+
+        .highlight::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .level-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .note {
+            background: rgba(52, 152, 219, 0.08);
+            padding: 25px;
+            border-radius: 6px;
+            margin-top: 40px;
+            border-left: 4px solid var(--secondary-color);
+            border: 1px solid rgba(52, 152, 219, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .note::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle at center, rgba(52, 152, 219, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        .note h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .note p {
+            color: var(--text-secondary);
+            margin: 0;
+            line-height: 1.8;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                padding: 25px;
+            }
+
+            .header-top {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .logo-container {
+                width: 140px;
+                height: 50px;
+            }
+
+            .commission-levels {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+
+            .level-card {
+                min-height: auto;
+                padding: 25px;
+            }
+        }
+
+        .level-card:nth-child(3) .commission-info,
+        .level-card:nth-child(4) .commission-info {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <div class="logo-container">
+                    <img src="images/logo.png" alt="Logo">
+                </div>
+                <div class="product-name">Karlynx</div>
+            </div>
+            <h1>佣金机制</h1>
+        </div>
+
+        <div class="rules-section">
+            <h2>套餐换算规则</h2>
+            <p>1套季度套餐 = 3套月套餐（按换算后的月套餐数量计算销量）</p>
+            <p>例如：售出2套季度套餐 = 6套月套餐，直接触发「机制一」（5套门槛）</p>
+        </div>
+
+        <div class="rules-section">
+            <h2>结算周期</h2>
+            <ul>
+                <li>每月1日清零销量，每月独立计算阶梯返佣</li>
+                <li>禁止跨月累计（如30日售出29套，不可延至下月凑30套）</li>
+                <li>每月最后一日24:00截止统计，次月3日前发放返佣</li>
+            </ul>
+        </div>
+
+        <div class="commission-levels">
+            <div class="level-card">
+                <h3>机制一：基础（5套）</h3>
+                <p>门槛：当月累计售出 ≥5套月套餐（或≥2套季度套餐）</p>
+                <div class="commission-info">
+                    <p class="highlight">返佣：总返佣 1000U</p>
+                    <p>单价：200U/套</p>
+                </div>
+            </div>
+
+            <div class="level-card">
+                <h3>机制二：中级（10套）</h3>
+                <p>门槛：当月累计售出 ≥10套月套餐（或≥4套季度套餐）</p>
+                <div class="commission-info">
+                    <p class="highlight">返佣：总返佣 2100U</p>
+                    <p>单价：210U/套</p>
+                </div>
+            </div>
+
+            <div class="level-card">
+                <h3>机制三：高级（20套）</h3>
+                <p>门槛：当月累计售出 ≥20套月套餐（或≥7套季度套餐）</p>
+                <div class="commission-info">
+                    <p class="highlight">返佣：总返佣 4400U</p>
+                    <p>单价：220U/套</p>
+                </div>
+            </div>
+
+            <div class="level-card">
+                <h3>机制四：顶级（30套）</h3>
+                <p>门槛：当月累计售出 ≥30套月套餐（或≥10套季度套餐）</p>
+                <div class="commission-info">
+                    <p class="highlight">返佣：总返佣 6900U起</p>
+                    <p>单价：230U/套</p>
+                    <p>超出部分：每增加1套，额外返佣230U</p>
+                    <p>例如：售出35套 → 总返佣=35×230U=8050U</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="note">
+            <h3>重要说明</h3>
+            <p>仅按当月最高达成机制结算（如售出25套，按「机制三」结算4400U，而非叠加低阶梯）</p>
+        </div>
+    </div>
+</body>
+</html>

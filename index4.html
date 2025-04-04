@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>佣金机制</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #e0e0e0;
+            --secondary-color: #6ba8e6;
+            --accent-color: #4a90e2;
+            --background-color: #e6f0ff;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+            --text-color: #2c3e50;
+            --text-secondary: #5c6c7c;
+            --card-bg: #ffffff;
+            --gradient-start: #6ba8e6;
+            --gradient-end: #4a90e2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            background-image: 
+                linear-gradient(135deg, rgba(107, 168, 230, 0.15) 0%, transparent 50%),
+                linear-gradient(45deg, rgba(74, 144, 226, 0.15) 0%, transparent 50%),
+                url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 0 L100 50 L50 100 L0 50 Z' fill='rgba(107, 168, 230, 0.05)'/%3E%3C/svg%3E");
+            background-size: 100% 100%, 100% 100%, 50px 50px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(107, 168, 230, 0.2);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle at center, rgba(74, 144, 226, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(50%, -50%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(50%, -50%) scale(1); opacity: 0.15; }
+            50% { transform: translate(50%, -50%) scale(1.2); opacity: 0.25; }
+            100% { transform: translate(50%, -50%) scale(1); opacity: 0.15; }
+        }
+
+        .container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle at center, rgba(26, 34, 48, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(-50%, 50%);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(240, 245, 255, 0.98));
+            padding: 10px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(107, 168, 230, 0.2);
+            position: relative;
+            overflow: hidden;
+            gap: 0;
+            width: 100%;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            opacity: 0.9;
+            box-shadow: 0 0 20px rgba(74, 144, 226, 0.5);
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, var(--gradient-end), var(--gradient-start));
+            opacity: 0.9;
+            box-shadow: 0 0 20px rgba(74, 144, 226, 0.5);
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 0;
+            background: transparent;
+            border-radius: 0;
+            border: none;
+            gap: 5px;
+            width: 30%;
+            flex-shrink: 0;
+        }
+
+        .header-top::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -20px;
+            width: 30px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            transform: translateY(-50%);
+            border-radius: 3px;
+            box-shadow: 0 0 15px rgba(74, 144, 226, 0.5);
+        }
+
+        .separator {
+            width: 2px;
+            height: 40px;
+            background: linear-gradient(to bottom, transparent, var(--secondary-color), transparent);
+            margin: 0 5px;
+            position: relative;
+            opacity: 0.8;
+            flex-shrink: 0;
+        }
+
+        .separator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--secondary-color), transparent);
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+        }
+
+        .separator::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--secondary-color), transparent);
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+        }
+
+        .logo-container {
+            width: 70px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: transparent;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+            border: none;
+            transition: all 0.3s ease;
+            margin-right: 0;
+        }
+
+        .logo-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .logo-container::before,
+        .logo-container::after {
+            display: none;
+        }
+
+        .logo-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+        }
+
+        .product-name {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-left: 0;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+            position: relative;
+            white-space: nowrap;
+            line-height: 1;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding-right: 8px;
+        }
+
+        .product-name::after {
+            content: 'VPN';
+            position: absolute;
+            top: -15px;
+            right: -20px;
+            font-size: 0.4em;
+            color: var(--secondary-color);
+            transform: rotate(-15deg);
+            font-weight: 500;
+            text-shadow: none;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 0;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: rotate(-15deg) translateY(0); }
+            50% { transform: rotate(-15deg) translateY(-5px); }
+            100% { transform: rotate(-15deg) translateY(0); }
+        }
+
+        .header h1 {
+            color: var(--text-color);
+            font-size: 4.2em;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: 4px;
+            position: relative;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding: 0 5px;
+            display: inline-block;
+            position: relative;
+            text-transform: uppercase;
+            transform: perspective(1000px) rotateX(5deg);
+            width: 70%;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .header h1::before {
+            display: none;
+        }
+
+        .header h1::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 0;
+            width: 30px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gradient-end), var(--gradient-start));
+            transform: translateY(-50%);
+            border-radius: 3px;
+            box-shadow: 0 0 15px rgba(74, 144, 226, 0.5);
+        }
+
+        .header h1 span {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.6em;
+            color: var(--secondary-color);
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            white-space: nowrap;
+            letter-spacing: 3px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .rules-section {
+            margin-bottom: 40px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(240, 245, 255, 0.95));
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(107, 168, 230, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rules-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+            opacity: 0.8;
+        }
+
+        .rules-section h2 {
+            color: var(--primary-color);
+            font-size: 2em;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--secondary-color);
+            display: inline-block;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .rules-section p {
+            color: var(--text-color);
+            margin: 15px 0;
+            line-height: 1.8;
+            font-size: 1.4em;
+        }
+
+        .rules-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .rules-section li {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            line-height: 1.8;
+            color: var(--text-color);
+        }
+
+        .rules-section li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .commission-levels {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin: 40px 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .level-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(240, 245, 255, 0.95));
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            min-height: 240px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(107, 168, 230, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .level-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
+            opacity: 0.9;
+            box-shadow: 0 0 15px rgba(74, 144, 226, 0.5);
+        }
+
+        .level-card h3 {
+            color: var(--secondary-color);
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .level-card p {
+            color: var(--text-color);
+            margin: 0;
+            line-height: 1.8;
+            font-size: 1.4em;
+        }
+
+        .commission-info {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .commission-info p {
+            margin: 0;
+            line-height: 1.6;
+            color: var(--text-color);
+            font-size: 1.4em;
+        }
+
+        .highlight {
+            color: var(--secondary-color);
+            font-weight: 700;
+            font-size: 1.6em;
+            background: linear-gradient(145deg, rgba(74, 144, 226, 0.2), rgba(74, 144, 226, 0.1));
+            padding: 20px 35px;
+            border-radius: 8px;
+            display: inline-block;
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            margin: 15px 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.2);
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .level-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(74, 144, 226, 0.3);
+            border-color: rgba(74, 144, 226, 0.4);
+        }
+
+        .note {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(240, 245, 255, 0.95));
+            padding: 40px;
+            border-radius: 16px;
+            margin-top: 40px;
+            border: 2px solid rgba(107, 168, 230, 0.3);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .note::before {
+            content: '!';
+            position: absolute;
+            top: 40px;
+            left: 20px;
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--secondary-color);
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.8;
+            transform: translateY(-50%);
+            margin-top: 0;
+            z-index: 1;
+            line-height: 1;
+        }
+
+        .note::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            opacity: 0.8;
+            box-shadow: 0 0 15px rgba(74, 144, 226, 0.5);
+        }
+
+        .note h3 {
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+            font-size: 2em;
+            padding-left: 40px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 800;
+            position: relative;
+            top: 0;
+            margin-top: 0;
+            line-height: 1;
+            transform: translateY(0);
+            display: flex;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            margin-left: 0;
+        }
+
+        .note p {
+            color: var(--text-color);
+            margin: 0;
+            line-height: 1.8;
+            font-size: 1.5em;
+            padding-left: 40px;
+            position: relative;
+            top: 0;
+        }
+
+        .note p::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 30px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            transform: translateY(-50%);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                padding: 25px;
+            }
+
+            .header {
+                padding: 12px 20px;
+            }
+
+            .header-top {
+                flex-direction: column;
+                gap: 15px;
+                width: 30%;
+            }
+
+            .logo-container {
+                width: 80px;
+                height: 30px;
+            }
+
+            .product-name {
+                font-size: 2.2em;
+            }
+
+            .product-name::after {
+                font-size: 0.45em;
+            }
+
+            .header h1 {
+                font-size: 3.6em;
+                padding: 0 20px;
+            }
+
+            .commission-levels {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+
+            .level-card {
+                min-height: auto;
+                padding: 25px;
+            }
+        }
+
+        .level-card:nth-child(3) .commission-info,
+        .level-card:nth-child(4) .commission-info {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <div class="logo-container">
+                    <img src="images/logo.png" alt="Logo">
+                </div>
+                <div class="product-name">Karlynx</div>
+            </div>
+            <div class="separator"></div>
+            <h1>佣金机制</h1>
+        </div>
+
+        <div class="rules-section">
+            <h2>套餐换算规则</h2>
+            <p>1套季度套餐 = 3套月套餐（按换算后的月套餐数量计算销量）</p>
+            <p>例如：售出2套季度套餐 = 6套月套餐，直接触发「机制一」（5套门槛）</p>
+        </div>
+
+        <div class="rules-section">
+            <h2>结算周期</h2>
+            <ul>
+                <li>每月1日清零销量，每月独立计算阶梯返佣</li>
+                <li>禁止跨月累计（如30日售出29套，不可延至下月凑30套）</li>
+                <li>每月最后一日24:00截止统计，次月3日前发放返佣</li>
+            </ul>
+        </div>
+
+        <div class="commission-levels">
+            <div class="level-card">
+                <h3>机制一：基础（5套）</h3>
+                <p>门槛：当月累计售出 ≥5套月套餐（或≥2套季度套餐）</p>
+                <div class="commission-info">
+                    <p class="highlight">返佣：总返佣 1000U</p>
+                    <p>单价：200U/套</p>
+                </div>
+            </div>
+
+            <div class="level-card">
+                <h3>机制二：中级（10套）</h3>
+                <p>门槛：当月累计售出 ≥10套月套餐（或≥4套季度套餐）</p>
+                <div class="commission-info">
+                    <p class="highlight">返佣：总返佣 2100U</p>
+                    <p>单价：210U/套</p>
+                </div>
+            </div>
+
+            <div class="level-card">
+                <h3>机制三：高级（20套）</h3>
+                <p>门槛：当月累计售出 ≥20套月套餐（或≥7套季度套餐）</p>
+                <div class="commission-info">
+                    <p class="highlight">返佣：总返佣 4400U</p>
+                    <p>单价：220U/套</p>
+                </div>
+            </div>
+
+            <div class="level-card">
+                <h3>机制四：顶级（30套）</h3>
+                <p>门槛：当月累计售出 ≥30套月套餐（或≥10套季度套餐）</p>
+                <div class="commission-info">
+                    <p class="highlight">返佣：总返佣 6900U起</p>
+                    <p>单价：230U/套</p>
+                    <p>超出部分：每增加1套，额外返佣230U</p>
+                    <p>例如：售出35套 → 总返佣=35×230U=8050U</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="note">
+            <h3>重要说明</h3>
+            <p>仅按当月最高达成机制结算（如售出25套，按「机制三」结算4400U，而非叠加低阶梯）</p>
+        </div>
+    </div>
+</body>
+</html>
